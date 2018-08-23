@@ -10,28 +10,48 @@ var items = {};
 exports.create = (text, callback) => {
   counter.getNextUniqueId((err, id) => {
     var todo = {id: id, text: text};
-    callback(null, todo);
+    var path = `${exports.dataDir}/${id}.txt`;
+    items[id] = text;
+    fs.writeFile(path, text, (err) => {
+      if (err) {
+        console.log('ERROR: ' + err);
+      } else {
+        callback(null, todo); // moved callback to this line from 14
+      }
+    });
   });
-  // I - String and callback function
-  // O - An object containing an ID property and text property
-  // C - none
-  // E - ?
 };
 
 exports.readOne = (id, callback) => {
-  var item = items[id];
-  if (!item) {
-    callback(new Error(`No item with id: ${id}`));
-  } else {
-    callback(null, {id: id, text: item});
-  }
+  // var item = items[id];
+  // if (!item) {
+  //   callback(new Error(`No item with id: ${id}`));
+  // } else {
+  //   callback(null, {id: id, text: item});
+  // }
+
+  fs.readFile(`{exports.dataDir}/${id}`, (err, fileData) => {
+    if (err) {
+      console.log("Error");
+    } else {
+      callback(null, fileData);
+    }
+  });
+
+
 };
 
 exports.readAll = (callback) => {
   var data = [];
-  _.each(items, (item, idx) => {
-    data.push({ id: idx, text: items[idx] });
+
+  fs.readdir(exports.dataDir, (err, fileNames) => {
+    fileNames.forEach((file) => {
+      exports.readOne(file, (err, fileData) => {
+        data.push(fileData);
+      });
+    });
   });
+
   callback(null, data);
 };
 
@@ -51,7 +71,7 @@ exports.delete = (id, callback) => {
   delete items[id];
   if(!item) {
     // report an error if item not found
-    callback(new Error(`No item with id: ${id}`))
+    callback(new Error(`No item with id: ${id}`));
   } else {
     callback();
   }
