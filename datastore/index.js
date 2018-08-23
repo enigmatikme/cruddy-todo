@@ -8,9 +8,14 @@ var items = {};
 // Public API - Fix these CRUD functions ///////////////////////////////////////
 
 exports.create = (text, callback) => {
-  var id = counter.getNextUniqueId();
-  items[id] = text;
-  callback(null, {id: id, text: text});
+  counter.getNextUniqueId((err, id) => {
+    var todo = {id: id, text: text};
+    callback(null, todo);
+  });
+  // I - String and callback function
+  // O - An object containing an ID property and text property
+  // C - none
+  // E - ?
 };
 
 exports.readOne = (id, callback) => {
@@ -31,6 +36,7 @@ exports.readAll = (callback) => {
 };
 
 exports.update = (id, text, callback) => {
+  console.log('create called');
   var item = items[id];
   if (!item) {
     callback(new Error(`No item with id: ${id}`));
